@@ -1,0 +1,84 @@
+# for this to work you must configure sudo such that it will be able to run the command without password
+
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+
+# .. more yabai startup stuff
+
+yabai -m config layout bsp
+
+# New windows pawns to the right if vertical split, or bottom if horizontal
+yabai -m config window_placement first_child
+#Set all padding and gaps to 5pt
+yabai -m config top_padding    0 
+yabai -m config bottom_padding 0
+yabai -m config left_padding   0
+yabai -m config right_padding  0
+yabai -m config window_gap     0 
+
+# Label Spaces
+yabai -m space 1 --label arc
+yabai -m space 2 --label vscode
+yabai -m space 3 --label terminal
+yabai -m space 11 --label chrome
+yabai -m space 12 --label discord
+yabai -m space 13 --label notes
+yabai -m space 5 --label steam
+yabai -m space 6 --label freeform
+yabai -m space 14 --label spotify
+
+# Send Spaces to correct monitors
+moveSpaceToDisplay() {
+  local spaceName="$1"
+  local displayName="$2"
+  yabai -m space --focus $spaceName
+  yabai -m space --display $displayName
+  sleep 0.1
+}
+
+
+moveSpaceToDisplay arc 1
+moveSpaceToDisplay freeform 1
+moveSpaceToDisplay vscode 1
+moveSpaceToDisplay steam 1
+moveSpaceToDisplay terminal 1
+moveSpaceToDisplay discord 2
+moveSpaceToDisplay spotify 2
+moveSpaceToDisplay notes 2
+moveSpaceToDisplay chrome 2
+
+# Move windows to appropriate space
+moveWindowToSpace() {
+  local app_name="$1"
+  local window_space="$2"
+  # Query for the relevant window ID
+  local window_id=$(yabai -m query --windows | jq --arg app "$app_name" '.[] | select(.app == $app) | .id')
+
+
+  yabai -m window $window_id --space $window_space
+  echo "Moving $window_title $window_id to $window_space"
+  sleep 0.5
+  }
+
+moveWindowToSpace Steam steam
+moveWindowToSpace iTerm2 terminal
+moveWindowToSpace Arc arc
+moveWindowToSpace Discord discord
+moveWindowToSpace "Google Chrome" chrome
+moveWindowToSpace Code vscode
+moveWindowToSpace Freeform freeform
+moveWindowToSpace Spotify spotify
+moveWindowToSpace Notes notes
+
+# Set monitors to focus default spaces
+yabai -m space --focus chrome
+yabai -m space --focus terminal
+
+
+#yabai -m vscode --display 1
+#yabai -m terminal --display 1
+#yabai -m chrome --display 2
+#yabai -m discord --display 2
+
+# find "${HOME}/.config/yabai" -type f -perm +111 -exec {} \;
+

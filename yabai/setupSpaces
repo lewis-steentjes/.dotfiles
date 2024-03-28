@@ -1,0 +1,74 @@
+#!/bin/zsh
+
+
+# Define a function that takes an application name as a parameter
+get_window_id_by_app_name() {
+    local app_name="$1"  # The application name passed to the function
+
+    # Query for the window ID based on the application name
+    local window_id=$(yabai -m query --windows | jq --arg app "$app_name" '.[] | select(.app == $app) | .uuid')
+
+
+    # Check if the window ID was found
+    if [ -z "$window_id" ]; then
+        echo "No window found for application named '$app_name'."
+        return 1
+    else
+        echo "Window ID of application '$app_name': $window_id"
+        # You can perform further actions with the window ID here
+    fi
+}
+
+# Example usage of the function with "Safari" as the application name to search for
+# get_window_id_by_app_name "Discord"
+
+destroy_all_spaces() {
+  local all_spaces=$(yabai -m query --spaces)
+
+  echo "$all_spaces" | jq -r '.[].index' | sort -nr | while read index; do
+    if [ $index -gt 1 ]; then 
+      echo "Closing Space ID: $index"
+    #yabai -m space --focus $id
+    #sleep 0.1
+      yabai -m space --destroy $index
+      sleep 0.1
+    fi
+  done
+}
+
+destroy_all_spaces
+
+make_space_called() {
+  local space_name="$1"
+  local app_name="$2"
+  local display_number="$3"
+  yabai -m space --create
+  
+  yabai -m space --focus next
+  yabai -m space --label $space_name
+
+  sleep 0.25
+  
+  local window_ids=$(yabai -m query --windows | jq --arg app "$app_name" '.[] | select(.app == $app) | .id')
+  echo "Moving $app_name windows to current space"
+  echo "$window_ids" | while read id; do
+    yabai -m window $id --space $space_name
+    sleep 0.25
+  done
+
+  yabai -m space $space_name --display $display_number 
+  sleep 0.25
+}
+
+make_space_called Arc Arc 1
+make_space_called VSCode Code 1
+make_space_called iTerm2 iTerm2 1
+make_space_called Zed Zed 1
+
+make_space_called Chrome "Google Chrome" 2
+make_space_called Discord Discord 2
+make_space_called Notes Notes 2
+make_space_called Spotify Spotify 2
+
+
+yabai -m space --focus iTerm2

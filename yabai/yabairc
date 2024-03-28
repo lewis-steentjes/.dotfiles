@@ -1,0 +1,72 @@
+# for this to work you must configure sudo such that it will be able to run the command without password
+
+yabai -m signal --add event=dock_did_restart action="sudo yabai --load-sa"
+sudo yabai --load-sa
+
+# .. more yabai startup stuff
+
+yabai -m config layout bsp
+
+# New windows pawns to the right if vertical split, or bottom if horizontal
+yabai -m config window_placement first_child
+
+#Set all padding and gaps to 0pt
+yabai -m config top_padding    0 
+yabai -m config bottom_padding 0
+yabai -m config left_padding   0
+yabai -m config right_padding  0
+yabai -m config window_gap     0 
+
+~/.config/yabai/setupSpaces
+
+
+
+
+
+
+
+
+
+
+
+
+# Label Spaces
+#
+#
+#
+
+# Send Spaces to correct monitors
+moveSpaceToDisplay() {
+  local spaceName="$1"
+  local displayName="$2"
+  yabai -m space --focus $spaceName
+  yabai -m space --display $displayName
+  sleep 0.1
+}
+
+
+# Move windows to appropriate space
+moveWindowToSpace() {
+  local app_name="$1"
+  local window_space="$2"
+  # Query for the relevant window ID
+  local window_id=$(yabai -m query --windows | jq --arg app "$app_name" '.[] | select(.app == $app) | .id')
+
+
+  yabai -m window $window_id --space $window_space
+  echo "Moving $window_title $window_id to $window_space"
+  sleep 0.5
+}
+
+# Set monitors to focus default spaces
+#yabai -m space --focus chrome
+#yabai -m space --focus terminal
+
+
+#yabai -m vscode --display 1
+#yabai -m terminal --display 1
+#yabai -m chrome --display 2
+#yabai -m discord --display 2
+
+# find "${HOME}/.config/yabai" -type f -perm +111 -exec {} \;
+
